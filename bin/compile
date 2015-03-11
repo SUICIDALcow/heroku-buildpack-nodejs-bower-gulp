@@ -88,11 +88,6 @@ if [ -f $build_dir/bower.json ]; then
 else
   run_bower=0
 fi
-if [ -f $build_dir/Gruntfile.js ] || [ -f $build_dir/Gruntfile.coffee ]; then
-  run_grunt=1
-else
-  run_grunt=0
-fi
 if [ -f $build_dir/gulpfile.js ]; then
   run_gulp=1
 else
@@ -113,10 +108,6 @@ fi
   if [ $run_gulp -ne 0 ] && [ ! -f $build_dir/node_modules/.bin/gulp ]; then
     # Install gulp locally
     npm install --userconfig $build_dir/.npmrc --production gulp 2>&1 | indent
-  fi
-  if [ $run_grunt -ne 0 ] && [ ! -f $build_dir/node_modules/.bin/grunt ]; then
-    # Install grunt locally
-    npm install --userconfig $build_dir/.npmrc --production grunt 2>&1 | indent
   fi
   if [ $run_bower -ne 0 ] && [ ! -f $build_dir/node_modules/.bin/bower ]; then
     # Install bower locally
@@ -176,43 +167,6 @@ fi
   fi
 )
 
-# this is required to execute bundle and store gems in cachedir
-# we do it globally because we want to be able to run bundle even
-# from within grunt
-export HOME=$build_dir
-export GEM_HOME=$build_dir/.gem/ruby/1.9.1
-export PATH="$GEM_HOME/bin:$PATH"
-
-(
-  # porting in compass install
-  # install compass
-  status "Installing Compass"
-  export LANG=en_US.UTF-8
-  export LC_ALL=en_US.UTF8
-  if test -d $cache_dir/ruby/.gem; then
-    status "Restoring ruby gems directory from cache"
-    cp -r $cache_dir/ruby/.gem $build_dir
-    gem update bundler --user-install --no-rdoc --no-ri 2>&1 | indent
-  else
-    gem install bundler --user-install --no-rdoc --no-ri 2>&1 | indent
-  fi
-
-  # Run bundler
-  bundle install 2>&1 | indent
-
-  # Run compass
-  HOME=$build_dir bundle exec compass compile
-)
-
-# cache ruby gems compass
-rm -rf $cache_dir/ruby
-mkdir -p $cache_dir/ruby
-
-# If app has a gems directory, cache it.
-if test -d $build_dir/.gem; then
-  status "Caching ruby gems directory for future builds"
-  cp -r $build_dir/.gem $cache_dir/ruby
-fi
 
 status "Building runtime environment"
 mkdir -p $build_dir/.profile.d
@@ -237,22 +191,6 @@ echo "export PATH=\"\$HOME/vendor/node/bin:\$HOME/bin:\$HOME/node_modules/.bin:\
     $build_dir/node_modules/.bin/gulp heroku:$NODE_ENV 2>&1 | indent
   else
     echo "-----> No gulpfile found"
-  fi
-)
-
-# Check and run grunt
-(
-  if [ $run_grunt -ne 0 ]; then
-    # get the env vars
-    if [ -d "$env_dir" ]; then
-      status "Exporting config vars to environment"
-      export_env_dir $env_dir
-    fi
-
-    echo "-----> Found Gruntfile, running grunt heroku:$NODE_ENV task"
-    $build_dir/node_modules/.bin/grunt heroku:$NODE_ENV 2>&1 | indent
-  else
-    echo "-----> No Gruntfile found"
   fi
 )
 

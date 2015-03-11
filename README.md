@@ -4,13 +4,9 @@ What this buildpack does
  * Run `npm install`
  * Install latest version of `gulp` if a gulpfile is present and was not already installed by previous pass
  * Install latest version of `bower` if a bowerfile is present and was not already installed by previous pass
- * Install latest version of `grunt` if a gruntfile is present and was not already installed by previous pass
  * Install `bundle`
  * Run `bower install`
- * Run `bundle install`
- * Run `bundle exec compass compile`
  * Run `gulp heroku:$NODE_ENV` (by default, it expands to `heroku:production`)
- * Run `grunt heroku:$NODE_ENV`
 
 
 How to access private repos
@@ -27,5 +23,4 @@ The buildpack will then automatically instruct bower to access your repos throug
 Notes
 -----
  * Everything is cached after first download: npm, bower, gems
- * If you're upgrading from another grunt/gulp/bower/nodejs buildpack/fork, the process might fail because of a different use of the build cache. You're advised to purge the build cache of your project, by running: `heroku plugins:install https://github.com/heroku/heroku-repo.git; heroku repo:purge_cache -a appname`
-
+ * If you're upgrading from another gulp/bower/nodejs buildpack/fork, the process might fail because of a different use of the build cache. You're advised to purge the build cache of your project, by running: `heroku plugins:install https://github.com/heroku/heroku-repo.git; heroku repo:purge_cache -a appname`
